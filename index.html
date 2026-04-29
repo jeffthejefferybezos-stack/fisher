@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JosherIsFound - Cinematic Reveal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
+
+        /* --- Background Starfield --- */
+        .stars {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+            z-index: -2;
+        }
+
+        .star-burst {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 2px;
+            background: white;
+            box-shadow: 0 0 10px white;
+            border-radius: 50%;
+            opacity: 0;
+            animation: hyper-drive 4s infinite linear;
+        }
+
+        /* Generating "Particles" for hyperspace effect */
+        .star-burst:nth-child(1) { transform: translate(-100px, 50px); animation-delay: 0.5s; }
+        .star-burst:nth-child(2) { transform: translate(150px, -80px); animation-delay: 1.2s; }
+        .star-burst:nth-child(3) { transform: translate(-200px, -150px); animation-delay: 2s; }
+        .star-burst:nth-child(4) { transform: translate(80px, 200px); animation-delay: 0.1s; }
+        .star-burst:nth-child(5) { transform: translate(-50px, -250px); animation-delay: 3s; }
+
+        /* --- Main Cinematic Container --- */
+        .scene {
+            position: relative;
+            text-align: center;
+            transform-style: preserve-3d;
+        }
+
+        /* --- Animated Elements --- */
+        .loading-text {
+            font-size: 1.5rem;
+            letter-spacing: 10px;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeInOut 5s forwards;
+            color: #00f2ff;
+            text-shadow: 0 0 20px #00f2ff;
+        }
+
+        .main-title {
+            font-size: 5rem;
+            font-weight: 900;
+            margin: 0;
+            opacity: 0;
+            transform: translateZ(-500px) rotateY(45deg);
+            animation: titleReveal 8s 5s forwards cubic-bezier(0.17, 0.67, 0.83, 0.67);
+            background: linear-gradient(to bottom, #fff 0%, #777 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 30px rgba(255,255,255,0.3));
+        }
+
+        .server-ip {
+            font-size: 2.5rem;
+            color: #ff0055;
+            margin-top: 20px;
+            opacity: 0;
+            letter-spacing: 5px;
+            animation: ipFlicker 4s 13s forwards ease-in-out;
+            text-shadow: 0 0 15px #ff0055, 0 0 30px #ff0055;
+        }
+
+        .glitch-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            pointer-events: none;
+            opacity: 0;
+            animation: glitchEffect 0.2s 12.5s 3;
+        }
+
+        /* --- Keyframes --- */
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: scale(0.8); }
+            20% { opacity: 1; transform: scale(1); }
+            80% { opacity: 1; transform: scale(1.1); }
+            100% { opacity: 0; transform: scale(1.5); display: none; }
+        }
+
+        @keyframes titleReveal {
+            0% { opacity: 0; transform: translateZ(-1000px) rotateY(90deg); }
+            30% { opacity: 1; transform: translateZ(0px) rotateY(0deg); }
+            80% { transform: translateZ(100px) rotateX(10deg); }
+            100% { opacity: 1; transform: translateZ(50px) rotateX(0deg); }
+        }
+
+        @keyframes ipFlicker {
+            0% { opacity: 0; transform: skewX(20deg); }
+            10% { opacity: 0.8; transform: skewX(-20deg); }
+            20% { opacity: 0.2; }
+            30% { opacity: 1; transform: skewX(0deg); }
+            100% { opacity: 1; }
+        }
+
+        @keyframes hyper-drive {
+            0% { transform: translateZ(0) scale(1); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateZ(1000px) scale(10); opacity: 0; }
+        }
+
+        @keyframes glitchEffect {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* Final Polish: Vignette */
+        .vignette {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 40%, black 150%);
+            z-index: 10;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="vignette"></div>
+    <div class="stars">
+        <div class="star-burst"></div>
+        <div class="star-burst"></div>
+        <div class="star-burst"></div>
+        <div class="star-burst"></div>
+        <div class="star-burst"></div>
+    </div>
+
+    <div class="scene">
+        <div class="loading-text">Establishing Connection...</div>
+        
+        <h1 class="main-title">JOSHERISFOUND</h1>
+        
+        <div class="glitch-overlay"></div>
+        
+        <div class="server-ip">EAST.CATPVP.NET</div>
+    </div>
+
+</body>
+</html>
