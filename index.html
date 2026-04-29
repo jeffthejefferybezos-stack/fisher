@@ -1,238 +1,343 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JosherIsFound - The Ultimate Intro</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Press+Start+2P&display=swap');
 
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #000;
-            color: #fff;
-            font-family: 'Orbitron', sans-serif;
-        }
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body,html{background:#000;overflow:hidden;}
+  #stage{width:100%;height:520px;background:#000;position:relative;overflow:hidden;font-family:'Orbitron',monospace;}
+  canvas#bg{position:absolute;top:0;left:0;width:100%;height:100%;}
+  #content{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
+  #server-tag{font-family:'Rajdhani',sans-serif;font-size:13px;letter-spacing:6px;color:#00e5ff;text-transform:uppercase;opacity:0;transform:translateY(-20px);transition:all 0.8s ease;text-shadow:0 0 10px #00e5ff;}
+  #vs-line{width:0;height:2px;background:linear-gradient(90deg,transparent,#ff6b00,#fff,#ff6b00,transparent);margin:12px 0;transition:width 1s ease;}
+  #name-wrap{position:relative;overflow:hidden;}
+  #player-name{font-size:clamp(42px,8vw,76px);font-weight:900;letter-spacing:4px;color:#fff;opacity:0;transform:scale(0.4) rotateX(60deg);transition:all 0.9s cubic-bezier(0.17,0.89,0.32,1.49);text-shadow:0 0 30px #ff6b00,0 0 60px #ff6b00,0 0 100px rgba(255,107,0,0.5);}
+  #player-name.show{opacity:1;transform:scale(1) rotateX(0deg);}
+  #subtitle{font-family:'Rajdhani',sans-serif;font-size:16px;letter-spacing:8px;color:#ff6b00;margin-top:8px;opacity:0;transform:translateY(20px);transition:all 0.8s ease 0.3s;text-transform:uppercase;}
+  #server-badge{margin-top:22px;padding:10px 28px;border:1px solid rgba(0,229,255,0.4);background:rgba(0,229,255,0.06);border-radius:4px;opacity:0;transform:translateY(30px);transition:all 0.8s ease;}
+  #server-badge span{font-size:12px;letter-spacing:5px;color:#00e5ff;font-family:'Rajdhani',sans-serif;text-transform:uppercase;}
+  #server-badge .dot{width:7px;height:7px;border-radius:50%;background:#00ff88;display:inline-block;margin-right:10px;box-shadow:0 0 8px #00ff88;animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(1.3);}}
+  #progress-bar{position:absolute;bottom:0;left:0;height:3px;background:linear-gradient(90deg,#ff6b00,#ff4500);width:0;transition:width 0.1s linear;}
+  #flash{position:absolute;top:0;left:0;width:100%;height:100%;background:#fff;opacity:0;pointer-events:none;}
+  #shockwave{position:absolute;border-radius:50%;border:3px solid rgba(255,107,0,0.8);width:0;height:0;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0;}
+  .spark{position:absolute;width:3px;height:3px;border-radius:50%;pointer-events:none;}
+  #replay-btn{position:absolute;bottom:20px;right:20px;padding:8px 18px;border:1px solid rgba(255,107,0,0.5);background:rgba(255,107,0,0.1);color:#ff6b00;font-family:'Orbitron',monospace;font-size:11px;letter-spacing:2px;cursor:pointer;pointer-events:all;opacity:0;transition:opacity 0.5s,background 0.2s;border-radius:3px;}
+  #replay-btn:hover{background:rgba(255,107,0,0.25);}
+</style>
 
-        #canvas-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-
-        /* Overlay UI */
-        .ui-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            pointer-events: none;
-            text-align: center;
-        }
-
-        .chapter-title {
-            font-family: 'Press Start 2P', cursive;
-            font-size: 20px;
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 20px;
-            opacity: 0;
-            transition: opacity 1s;
-        }
-
-        /* Final Reveal Styles */
-        #final-text {
-            display: none;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .hero-name {
-            font-size: 6rem;
-            text-transform: uppercase;
-            background: linear-gradient(to bottom, #fff, #00f2ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 30px #00f2ff);
-            animation: pulse 2s infinite alternate;
-        }
-
-        .sub-text {
-            font-size: 2rem;
-            letter-spacing: 10px;
-            color: #7000ff;
-        }
-
-        .join-btn {
-            margin-top: 40px;
-            font-size: 1.5rem;
-            color: #ff0055;
-            text-shadow: 0 0 10px #ff0055;
-            animation: flicker 0.5s infinite;
-        }
-
-        @keyframes pulse {
-            from { transform: scale(1); filter: drop-shadow(0 0 20px #00f2ff); }
-            to { transform: scale(1.05); filter: drop-shadow(0 0 50px #00f2ff); }
-        }
-
-        @keyframes flicker {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        /* Loading progress bar for the 180s journey */
-        #progress-container {
-            position: absolute;
-            bottom: 20px;
-            width: 80%;
-            height: 4px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 2px;
-        }
-        #progress-bar {
-            width: 0%;
-            height: 100%;
-            background: #00f2ff;
-            box-shadow: 0 0 10px #00f2ff;
-        }
-    </style>
-</head>
-<body>
-
-    <div id="canvas-container"></div>
-    
-    <div class="ui-layer">
-        <div id="chapter-label" class="chapter-title">INITIALIZING...</div>
-        
-        <div id="final-text">
-            <div class="hero-name">JosherIsFound</div>
-            <div class="sub-text">IS NOW PLAYING<br>east.catpvp.net</div>
-            <div class="join-btn">⚔ JOIN THE BATTLE ⚔</div>
-        </div>
-
-        <div id="progress-container">
-            <div id="progress-bar"></div>
-        </div>
+<div id="stage">
+  <canvas id="bg"></canvas>
+  <div id="flash"></div>
+  <div id="shockwave"></div>
+  <div id="content">
+    <div id="server-tag">east.catpvp.east</div>
+    <div id="vs-line"></div>
+    <div id="name-wrap">
+      <div id="player-name">JosherIsFound</div>
     </div>
+    <div id="subtitle">has entered the arena</div>
+    <div id="server-badge"><span><span class="dot"></span>server: east.catpvp.east</span></div>
+  </div>
+  <div id="progress-bar"></div>
+  <button id="replay-btn" onclick="startAnimation()">↺ REPLAY</button>
+</div>
 
-    <script>
-        let scene, camera, renderer, particles;
-        let clock = new THREE.Clock();
-        let currentChapter = 0;
-        const totalDuration = 180; // Seconds
+<script>
+const canvas = document.getElementById('bg');
+const ctx = canvas.getContext('2d');
+const stage = document.getElementById('stage');
 
-        function init() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.getElementById('canvas-container').appendChild(renderer.domElement);
+function resize(){
+  canvas.width = stage.offsetWidth;
+  canvas.height = stage.offsetHeight;
+}
+resize();
 
-            createParticles(2000, 0x00ff00); // Start with Minecraft Green
-            camera.position.z = 50;
+const W = ()=>canvas.width, H = ()=>canvas.height;
 
-            animate();
-        }
+let particles = [], stars = [], rings = [], animFrame, startTime, pbInterval, totalDuration=30000;
 
-        function createParticles(count, color) {
-            if (particles) scene.remove(particles);
-            
-            const geometry = new THREE.BufferGeometry();
-            const positions = new Float32Array(count * 3);
-            
-            for (let i = 0; i < count * 3; i++) {
-                positions[i] = (Math.random() - 0.5) * 150;
-            }
-            
-            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            const material = new THREE.PointsMaterial({ size: 0.8, color: color });
-            particles = new THREE.Points(geometry, material);
-            scene.add(particles);
-        }
+function createStars(){
+  stars = [];
+  for(let i=0;i<200;i++){
+    stars.push({x:Math.random()*W(),y:Math.random()*H(),r:Math.random()*1.5+0.2,speed:Math.random()*0.8+0.1,twinkle:Math.random()*Math.PI*2});
+  }
+}
 
-        function updateChapter(time) {
-            const label = document.getElementById('chapter-label');
-            const progress = (time / totalDuration) * 100;
-            document.getElementById('progress-bar').style.width = progress + '%';
+function spawnParticle(x,y,color){
+  const angle = Math.random()*Math.PI*2;
+  const speed = Math.random()*5+2;
+  particles.push({x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-2,life:1,color,size:Math.random()*3+1});
+}
 
-            // Chapter Logic
-            if (time < 25 && currentChapter !== 1) {
-                currentChapter = 1;
-                label.innerText = "CHAPTER I: MINECRAFT ORIGINS";
-                label.style.opacity = 1;
-                createParticles(3000, 0x3d9e3d); // Minecraft Green
-            } else if (time >= 25 && time < 50 && currentChapter !== 2) {
-                currentChapter = 2;
-                label.innerText = "CHAPTER II: NEON ROBLOX DIMENSION";
-                createParticles(5000, 0xff00ff); // Roblox Magenta
-            } else if (time >= 50 && time < 80 && currentChapter !== 3) {
-                currentChapter = 3;
-                label.innerText = "CHAPTER III: THE NETHER IGNITION";
-                createParticles(8000, 0xff4400); // Fire Orange
-            } else if (time >= 80 && time < 120 && currentChapter !== 4) {
-                currentChapter = 4;
-                label.innerText = "CHAPTER IV: COSMIC CONVERGENCE";
-                createParticles(10000, 0x00f2ff); // Galaxy Blue
-            } else if (time >= 120 && time < 155 && currentChapter !== 5) {
-                currentChapter = 5;
-                label.innerText = "CHAPTER V: CATPVP ARENA OPENING";
-                createParticles(15000, 0xffffff); // White Lightning
-            } else if (time >= 155 && currentChapter !== 6) {
-                currentChapter = 6;
-                label.style.display = "none";
-                document.getElementById('progress-container').style.display = "none";
-                document.getElementById('final-text').style.display = "flex";
-                createParticles(20000, 0x7000ff); // Final Void Purple
-            }
-        }
+function spawnBurst(n=40){
+  const cx=W()/2, cy=H()/2;
+  for(let i=0;i<n;i++){
+    const color = ['#ff6b00','#ff9500','#fff','#ff4500','#00e5ff'][Math.floor(Math.random()*5)];
+    spawnParticle(cx+Math.random()*60-30, cy+Math.random()*40-20, color);
+  }
+}
 
-        function animate() {
-            requestAnimationFrame(animate);
-            let elapsed = clock.getElapsedTime();
-            
-            if (elapsed <= totalDuration) {
-                updateChapter(elapsed);
-            }
+let gridOffset=0;
+function drawGrid(t){
+  const gw=60, gh=60;
+  gridOffset = (t*0.02)%gh;
+  ctx.save();
+  ctx.strokeStyle='rgba(255,107,0,0.07)';
+  ctx.lineWidth=0.5;
+  for(let x=0;x<W()+gw;x+=gw){
+    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H());ctx.stroke();
+  }
+  for(let y=-gh+gridOffset;y<H()+gh;y+=gh){
+    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W(),y);ctx.stroke();
+  }
+  ctx.restore();
+}
 
-            // Particle movement
-            particles.rotation.y += 0.002;
-            particles.rotation.x += 0.001;
+function drawStars(t){
+  stars.forEach(s=>{
+    s.twinkle+=0.03;
+    const a = 0.4+0.4*Math.sin(s.twinkle);
+    ctx.save();
+    ctx.fillStyle=`rgba(200,220,255,${a})`;
+    ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  });
+}
 
-            if (currentChapter === 4) {
-                // Spiral Vortex Effect
-                particles.rotation.z += 0.05;
-                camera.position.z = 50 + Math.sin(elapsed) * 20;
-            }
+let scanY=-10, scanDir=1;
+function drawScanline(t){
+  scanY += scanDir*1.5;
+  if(scanY>H()+10||scanY<-10) scanDir*=-1;
+  const grad = ctx.createLinearGradient(0,scanY-20,0,scanY+20);
+  grad.addColorStop(0,'rgba(0,229,255,0)');
+  grad.addColorStop(0.5,'rgba(0,229,255,0.06)');
+  grad.addColorStop(1,'rgba(0,229,255,0)');
+  ctx.fillStyle=grad;
+  ctx.fillRect(0,scanY-20,W(),40);
+}
 
-            if (currentChapter === 5) {
-                // Arena Chaos
-                particles.position.z += Math.sin(elapsed * 10) * 0.5;
-            }
+let vigPulse=0;
+function drawVignette(t){
+  vigPulse = 0.5+0.5*Math.sin(t*0.002);
+  const grad = ctx.createRadialGradient(W()/2,H()/2,H()*0.2,W()/2,H()/2,H()*0.85);
+  grad.addColorStop(0,'transparent');
+  grad.addColorStop(1,`rgba(0,0,0,${0.7+vigPulse*0.15})`);
+  ctx.fillStyle=grad;
+  ctx.fillRect(0,0,W(),H());
+}
 
-            renderer.render(scene, camera);
-        }
+let glowPulse=0;
+function drawCenterGlow(t, intensity=1){
+  glowPulse = Math.sin(t*0.003)*0.5+0.5;
+  const grad = ctx.createRadialGradient(W()/2,H()/2,0,W()/2,H()/2,H()*0.5);
+  grad.addColorStop(0,`rgba(255,107,0,${0.08*intensity*(0.8+glowPulse*0.2)})`);
+  grad.addColorStop(0.4,`rgba(255,107,0,${0.03*intensity})`);
+  grad.addColorStop(1,'transparent');
+  ctx.fillStyle=grad;
+  ctx.fillRect(0,0,W(),H());
+}
 
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+function drawRings(t){
+  rings.forEach((r,i)=>{
+    r.radius+=r.speed;
+    r.opacity-=0.015;
+    if(r.opacity<=0){rings.splice(i,1);return;}
+    ctx.save();
+    ctx.strokeStyle=`rgba(${r.color},${r.opacity})`;
+    ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(W()/2,H()/2,r.radius,0,Math.PI*2);ctx.stroke();
+    ctx.restore();
+  });
+}
 
-        window.onload = init;
-    </script>
-</body>
-</html>
+function addRing(color='255,107,0'){
+  rings.push({radius:30,speed:4,opacity:0.8,color});
+}
+
+function drawParticles(){
+  particles.forEach((p,i)=>{
+    p.x+=p.vx; p.y+=p.vy; p.vy+=0.08; p.life-=0.022;
+    if(p.life<=0){particles.splice(i,1);return;}
+    ctx.save();
+    ctx.globalAlpha=p.life;
+    ctx.fillStyle=p.color;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.size*p.life,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  });
+}
+
+let lightningTimer=0;
+let lightningLines=[];
+function maybeSpawnLightning(t){
+  lightningTimer++;
+  if(lightningTimer%22===0){
+    lightningLines.push({life:8,x1:W()*Math.random(),y1:0,x2:W()/2+(Math.random()-0.5)*100,y2:H()/2+(Math.random()-0.5)*80,color:Math.random()>0.5?'0,229,255':'255,107,0'});
+  }
+  lightningLines.forEach((l,i)=>{
+    l.life--;
+    if(l.life<=0){lightningLines.splice(i,1);return;}
+    const a = l.life/8;
+    ctx.save();
+    ctx.strokeStyle=`rgba(${l.color},${a*0.7})`;
+    ctx.lineWidth=1+a;
+    ctx.shadowColor=`rgba(${l.color},0.5)`;
+    ctx.shadowBlur=8;
+    ctx.beginPath();ctx.moveTo(l.x1,l.y1);
+    const mx=(l.x1+l.x2)/2+(Math.random()-0.5)*50;
+    const my=(l.y1+l.y2)/2+(Math.random()-0.5)*50;
+    ctx.quadraticCurveTo(mx,my,l.x2,l.y2);ctx.stroke();
+    ctx.restore();
+  });
+}
+
+let phase=0, phaseTime=0;
+const phases=[
+  {name:'void',dur:1200},
+  {name:'grid',dur:2500},
+  {name:'approach',dur:3000},
+  {name:'flash',dur:400},
+  {name:'reveal',dur:4000},
+  {name:'hype',dur:5000},
+  {name:'hold',dur:8000},
+  {name:'fadeout',dur:5900},
+];
+
+let nameEl,subtitleEl,serverTagEl,vsLine,serverBadge,flashEl,shockwaveEl;
+let phaseStarted={};
+
+function triggerCSS(el,prop,val){el.style[prop]=val;}
+
+function doPhaseLogic(phaseName, t){
+  if(!phaseStarted[phaseName]){
+    phaseStarted[phaseName]=true;
+
+    if(phaseName==='grid'){
+      serverTagEl.style.opacity='1';
+      serverTagEl.style.transform='translateY(0)';
+    }
+    if(phaseName==='approach'){
+      vsLine.style.width='200px';
+      for(let i=0;i<3;i++) setTimeout(()=>addRing('255,107,0'),i*300);
+      for(let i=0;i<20;i++) setTimeout(()=>spawnBurst(8),i*120);
+    }
+    if(phaseName==='flash'){
+      flashEl.style.opacity='0.9';
+      setTimeout(()=>{flashEl.style.transition='opacity 0.3s';flashEl.style.opacity='0';},80);
+      shockwaveEl.style.opacity='1';
+      shockwaveEl.style.width='0';shockwaveEl.style.height='0';
+      shockwaveEl.style.transition='width 0.6s ease-out,height 0.6s ease-out,opacity 0.6s ease-out';
+      setTimeout(()=>{
+        shockwaveEl.style.width='600px';
+        shockwaveEl.style.height='600px';
+        shockwaveEl.style.opacity='0';
+      },20);
+      spawnBurst(80);
+      for(let i=0;i<5;i++) addRing('255,107,0');
+    }
+    if(phaseName==='reveal'){
+      nameEl.classList.add('show');
+      subtitleEl.style.opacity='1';
+      subtitleEl.style.transform='translateY(0)';
+    }
+    if(phaseName==='hype'){
+      serverBadge.style.opacity='1';
+      serverBadge.style.transform='translateY(0)';
+      for(let i=0;i<8;i++) setTimeout(()=>{spawnBurst(15);addRing('0,229,255');},i*400);
+    }
+    if(phaseName==='fadeout'){
+      document.getElementById('replay-btn').style.opacity='1';
+    }
+  }
+}
+
+let fadeOutProgress=0;
+
+function loop(ts){
+  if(!startTime) startTime=ts;
+  const elapsed = ts-startTime;
+  const t=elapsed;
+
+  let acc=0;
+  for(let i=0;i<phases.length;i++){
+    acc+=phases[i].dur;
+    if(elapsed<acc){
+      if(phase!==i){phase=i;phaseTime=0;}
+      phaseTime=elapsed-(acc-phases[i].dur);
+      doPhaseLogic(phases[i].name,phaseTime);
+      break;
+    }
+  }
+
+  ctx.clearRect(0,0,W(),H());
+  ctx.fillStyle='#000';
+  ctx.fillRect(0,0,W(),H());
+
+  const pname=phases[phase]?.name||'hold';
+
+  if(['grid','approach','flash','reveal','hype','hold','fadeout'].includes(pname)){
+    drawGrid(t);
+    drawStars(t);
+  }
+  if(['approach','flash','reveal','hype','hold','fadeout'].includes(pname)){
+    maybeSpawnLightning(t);
+  }
+
+  let glowIntensity=1;
+  if(pname==='flash') glowIntensity=3;
+  if(pname==='reveal'||pname==='hype') glowIntensity=2;
+  drawCenterGlow(t,glowIntensity);
+  drawRings(t);
+  drawParticles();
+  drawScanline(t);
+  drawVignette(t);
+
+  if(pname==='fadeout'){
+    fadeOutProgress=phaseTime/phases[7].dur;
+    ctx.fillStyle=`rgba(0,0,0,${Math.min(fadeOutProgress*1.5,1)})`;
+    ctx.fillRect(0,0,W(),H());
+  }
+
+  document.getElementById('progress-bar').style.width=(Math.min(elapsed/totalDuration,1)*100)+'%';
+
+  if(elapsed<totalDuration+500){
+    animFrame=requestAnimationFrame(loop);
+  }
+}
+
+function startAnimation(){
+  cancelAnimationFrame(animFrame);
+  particles=[];rings=[];lightningLines=[];
+  phaseStarted={};phase=0;phaseTime=0;startTime=null;fadeOutProgress=0;
+
+  nameEl=document.getElementById('player-name');
+  subtitleEl=document.getElementById('subtitle');
+  serverTagEl=document.getElementById('server-tag');
+  vsLine=document.getElementById('vs-line');
+  serverBadge=document.getElementById('server-badge');
+  flashEl=document.getElementById('flash');
+  shockwaveEl=document.getElementById('shockwave');
+
+  nameEl.classList.remove('show');
+  nameEl.style.opacity='0';
+  nameEl.style.transform='scale(0.4) rotateX(60deg)';
+  subtitleEl.style.opacity='0';
+  subtitleEl.style.transform='translateY(20px)';
+  serverTagEl.style.opacity='0';
+  serverTagEl.style.transform='translateY(-20px)';
+  vsLine.style.width='0';
+  serverBadge.style.opacity='0';
+  serverBadge.style.transform='translateY(30px)';
+  flashEl.style.opacity='0';
+  flashEl.style.transition='';
+  shockwaveEl.style.opacity='0';
+  shockwaveEl.style.width='0';
+  shockwaveEl.style.height='0';
+  document.getElementById('replay-btn').style.opacity='0';
+  document.getElementById('progress-bar').style.width='0';
+
+  createStars();
+  animFrame=requestAnimationFrame(loop);
+}
+
+startAnimation();
+</script>
