@@ -3,168 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JosherIsFound - Cinematic Reveal</title>
+    <title>JosherIsFound - The Ultimate Intro</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Press+Start+2P&display=swap');
 
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            background-color: #000;
+            overflow: hidden;
+            background: #000;
             color: #fff;
             font-family: 'Orbitron', sans-serif;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            perspective: 1000px;
         }
 
-        /* --- Background Starfield --- */
-        .stars {
+        #canvas-container {
             position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
-            z-index: -2;
+            z-index: 1;
         }
 
-        .star-burst {
+        /* Overlay UI */
+        .ui-layer {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 2px;
-            height: 2px;
-            background: white;
-            box-shadow: 0 0 10px white;
-            border-radius: 50%;
-            opacity: 0;
-            animation: hyper-drive 4s infinite linear;
-        }
-
-        /* Generating "Particles" for hyperspace effect */
-        .star-burst:nth-child(1) { transform: translate(-100px, 50px); animation-delay: 0.5s; }
-        .star-burst:nth-child(2) { transform: translate(150px, -80px); animation-delay: 1.2s; }
-        .star-burst:nth-child(3) { transform: translate(-200px, -150px); animation-delay: 2s; }
-        .star-burst:nth-child(4) { transform: translate(80px, 200px); animation-delay: 0.1s; }
-        .star-burst:nth-child(5) { transform: translate(-50px, -250px); animation-delay: 3s; }
-
-        /* --- Main Cinematic Container --- */
-        .scene {
-            position: relative;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
             text-align: center;
-            transform-style: preserve-3d;
         }
 
-        /* --- Animated Elements --- */
-        .loading-text {
-            font-size: 1.5rem;
-            letter-spacing: 10px;
+        .chapter-title {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 20px;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        /* Final Reveal Styles */
+        #final-text {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .hero-name {
+            font-size: 6rem;
             text-transform: uppercase;
-            opacity: 0;
-            animation: fadeInOut 5s forwards;
-            color: #00f2ff;
-            text-shadow: 0 0 20px #00f2ff;
-        }
-
-        .main-title {
-            font-size: 5rem;
-            font-weight: 900;
-            margin: 0;
-            opacity: 0;
-            transform: translateZ(-500px) rotateY(45deg);
-            animation: titleReveal 8s 5s forwards cubic-bezier(0.17, 0.67, 0.83, 0.67);
-            background: linear-gradient(to bottom, #fff 0%, #777 100%);
+            background: linear-gradient(to bottom, #fff, #00f2ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 30px rgba(255,255,255,0.3));
+            filter: drop-shadow(0 0 30px #00f2ff);
+            animation: pulse 2s infinite alternate;
         }
 
-        .server-ip {
-            font-size: 2.5rem;
+        .sub-text {
+            font-size: 2rem;
+            letter-spacing: 10px;
+            color: #7000ff;
+        }
+
+        .join-btn {
+            margin-top: 40px;
+            font-size: 1.5rem;
             color: #ff0055;
-            margin-top: 20px;
-            opacity: 0;
-            letter-spacing: 5px;
-            animation: ipFlicker 4s 13s forwards ease-in-out;
-            text-shadow: 0 0 15px #ff0055, 0 0 30px #ff0055;
+            text-shadow: 0 0 10px #ff0055;
+            animation: flicker 0.5s infinite;
         }
 
-        .glitch-overlay {
+        @keyframes pulse {
+            from { transform: scale(1); filter: drop-shadow(0 0 20px #00f2ff); }
+            to { transform: scale(1.05); filter: drop-shadow(0 0 50px #00f2ff); }
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Loading progress bar for the 180s journey */
+        #progress-container {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.05);
-            pointer-events: none;
-            opacity: 0;
-            animation: glitchEffect 0.2s 12.5s 3;
+            bottom: 20px;
+            width: 80%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
         }
-
-        /* --- Keyframes --- */
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: scale(0.8); }
-            20% { opacity: 1; transform: scale(1); }
-            80% { opacity: 1; transform: scale(1.1); }
-            100% { opacity: 0; transform: scale(1.5); display: none; }
-        }
-
-        @keyframes titleReveal {
-            0% { opacity: 0; transform: translateZ(-1000px) rotateY(90deg); }
-            30% { opacity: 1; transform: translateZ(0px) rotateY(0deg); }
-            80% { transform: translateZ(100px) rotateX(10deg); }
-            100% { opacity: 1; transform: translateZ(50px) rotateX(0deg); }
-        }
-
-        @keyframes ipFlicker {
-            0% { opacity: 0; transform: skewX(20deg); }
-            10% { opacity: 0.8; transform: skewX(-20deg); }
-            20% { opacity: 0.2; }
-            30% { opacity: 1; transform: skewX(0deg); }
-            100% { opacity: 1; }
-        }
-
-        @keyframes hyper-drive {
-            0% { transform: translateZ(0) scale(1); opacity: 0; }
-            50% { opacity: 1; }
-            100% { transform: translateZ(1000px) scale(10); opacity: 0; }
-        }
-
-        @keyframes glitchEffect {
-            0% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-
-        /* Final Polish: Vignette */
-        .vignette {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, transparent 40%, black 150%);
-            z-index: 10;
-            pointer-events: none;
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #00f2ff;
+            box-shadow: 0 0 10px #00f2ff;
         }
     </style>
 </head>
 <body>
 
-    <div class="vignette"></div>
-    <div class="stars">
-        <div class="star-burst"></div>
-        <div class="star-burst"></div>
-        <div class="star-burst"></div>
-        <div class="star-burst"></div>
-        <div class="star-burst"></div>
+    <div id="canvas-container"></div>
+    
+    <div class="ui-layer">
+        <div id="chapter-label" class="chapter-title">INITIALIZING...</div>
+        
+        <div id="final-text">
+            <div class="hero-name">JosherIsFound</div>
+            <div class="sub-text">IS NOW PLAYING<br>east.catpvp.net</div>
+            <div class="join-btn">⚔ JOIN THE BATTLE ⚔</div>
+        </div>
+
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
     </div>
 
-    <div class="scene">
-        <div class="loading-text">Establishing Connection...</div>
-        
-        <h1 class="main-title">JOSHERISFOUND</h1>
-        
-        <div class="glitch-overlay"></div>
-        
-        <div class="server-ip">EAST.CATPVP.NET</div>
-    </div>
+    <script>
+        let scene, camera, renderer, particles;
+        let clock = new THREE.Clock();
+        let currentChapter = 0;
+        const totalDuration = 180; // Seconds
 
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            createParticles(2000, 0x00ff00); // Start with Minecraft Green
+            camera.position.z = 50;
+
+            animate();
+        }
+
+        function createParticles(count, color) {
+            if (particles) scene.remove(particles);
+            
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(count * 3);
+            
+            for (let i = 0; i < count * 3; i++) {
+                positions[i] = (Math.random() - 0.5) * 150;
+            }
+            
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const material = new THREE.PointsMaterial({ size: 0.8, color: color });
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+        }
+
+        function updateChapter(time) {
+            const label = document.getElementById('chapter-label');
+            const progress = (time / totalDuration) * 100;
+            document.getElementById('progress-bar').style.width = progress + '%';
+
+            // Chapter Logic
+            if (time < 25 && currentChapter !== 1) {
+                currentChapter = 1;
+                label.innerText = "CHAPTER I: MINECRAFT ORIGINS";
+                label.style.opacity = 1;
+                createParticles(3000, 0x3d9e3d); // Minecraft Green
+            } else if (time >= 25 && time < 50 && currentChapter !== 2) {
+                currentChapter = 2;
+                label.innerText = "CHAPTER II: NEON ROBLOX DIMENSION";
+                createParticles(5000, 0xff00ff); // Roblox Magenta
+            } else if (time >= 50 && time < 80 && currentChapter !== 3) {
+                currentChapter = 3;
+                label.innerText = "CHAPTER III: THE NETHER IGNITION";
+                createParticles(8000, 0xff4400); // Fire Orange
+            } else if (time >= 80 && time < 120 && currentChapter !== 4) {
+                currentChapter = 4;
+                label.innerText = "CHAPTER IV: COSMIC CONVERGENCE";
+                createParticles(10000, 0x00f2ff); // Galaxy Blue
+            } else if (time >= 120 && time < 155 && currentChapter !== 5) {
+                currentChapter = 5;
+                label.innerText = "CHAPTER V: CATPVP ARENA OPENING";
+                createParticles(15000, 0xffffff); // White Lightning
+            } else if (time >= 155 && currentChapter !== 6) {
+                currentChapter = 6;
+                label.style.display = "none";
+                document.getElementById('progress-container').style.display = "none";
+                document.getElementById('final-text').style.display = "flex";
+                createParticles(20000, 0x7000ff); // Final Void Purple
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            let elapsed = clock.getElapsedTime();
+            
+            if (elapsed <= totalDuration) {
+                updateChapter(elapsed);
+            }
+
+            // Particle movement
+            particles.rotation.y += 0.002;
+            particles.rotation.x += 0.001;
+
+            if (currentChapter === 4) {
+                // Spiral Vortex Effect
+                particles.rotation.z += 0.05;
+                camera.position.z = 50 + Math.sin(elapsed) * 20;
+            }
+
+            if (currentChapter === 5) {
+                // Arena Chaos
+                particles.position.z += Math.sin(elapsed * 10) * 0.5;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        window.onload = init;
+    </script>
 </body>
 </html>
